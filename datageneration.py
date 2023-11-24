@@ -10,12 +10,15 @@ import cv2
 import numpy as np
 import random
 from scipy import signal
+
 class node():
-    def __init__(self, _pos: np.array, _goal: np.array, _id: int):
+    def __init__(self, _pos: np.array, _goal: np.array, _id: int, _width: int, _value: int):
         self.pos = _pos
         self.gvalue = 100000
         self.hvalue = np.linalg.norm(_goal - self.pos, ord=2)
         self.id = _id
+        self.width = _width
+        self.value = _value
     
     def __lt__(self, other):
         return self.fvalue < other.fvalue
@@ -26,8 +29,8 @@ class node():
     def __hash__(self):
         return self.id
     
-    def __eq__(self):
-        return self.id
+    def __eq__(self, other):
+        return self.id == other.id
     
     def getneighbor(self)->list:
         return [self.id+1, self.id-1, self.id-self.width-1, self.id-self.width, self.id-self.width+1, self.id+self.width-1, self.id+self.width, self.id+self.width+1]
@@ -45,10 +48,10 @@ class node():
         return self.pos
            
     def getdis(self, _node)->float:
-        return self.gvalue + np.linalg.norm(self.pos - _node.getpos(), ord=2)
+        return self.gvalue + np.linalg.norm(self.pos - _node, ord=2)
     
     def getid(self):
-        return id
+        return self.id
     
     def setAsStart(self):
         self.parent = -1
@@ -70,7 +73,7 @@ class AstarMap():
         self.initMap()
     
     def initMap(self):
-        self.mapobs = np.zeros(self.height, self.width)
+        self.mapobs = np.zeros((self.height, self.width))
         self.mapobs[:,  0] = 1
         self.mapobs[:, -1] = 1
         self.mapobs[0,  :] = 1
@@ -106,7 +109,7 @@ class AstarMap():
         for i in range(self.width * self.height):
             y = i//self.width
             x = i%self.width
-            self.listnode.append(node(np.array([x, y]), self.goal, i, self.map[x,y], self.width))
+            self.listnode.append(node(np.array([x, y]), self.goal, i, self.width, self.mapobs[y, x]))
         self.listnode[self.width*self.start[1] + self.start[0]].setAsStart()
         self.goalnode = self.listnode[self.width * self.goal[1] + self.goal[0]]
 
@@ -124,18 +127,27 @@ class AstarMap():
                 break
         while True:
             self.goal = np.array([random.randint(1, self.width-2), random.randint(1, self.height-2)])
-            if(self.mapobs[self.goal[1], self.goal[0]]==0 and self.goal != self.start):
+            if(self.mapobs[self.goal[1], self.goal[0]]==0 and not (self.goal==self.start).any()):
                 break
         self.mapstart[self.start[1], self.start[0]] = 1
         self.mapgoal[self.goal[1], self.goal[0]] = 1
+        cv2.imwrite(f"{self.path}input/input2_.png", self.mapstart*255)
 
+        print(f"start {self.start[1]}, {self.start[0]}")
         self.Nodenumber = count
     
     def planning(self):
         self.resultmap = np.zeros((self.height, self.width))
 
-        openset = {self.listnode[self.width*self.start[1], self.start[0]]}
+        openset = {self.listnode[self.width*self.start[1]+self.start[0]]}
         flag = False
+
+        input = np.zeros((self.height, self.width, 3))
+        # input[:,:, 0] = np.where(self.mapobs==0, 255, 0)
+        input[:,:, 2] = np.where(np.logical_xor(self.mapobs==1, np.logical_xor(self.mapstart==1, self.mapgoal==1)), 0, 255)
+        input[:,:, 1] = np.where(np.logical_and(self.mapgoal==0, self.mapobs==0), 255, 0)
+        input[:,:, 0] = np.where(np.logical_and(self.mapobs==0, self.mapstart==0), 255, 0)
+
         while openset:
             open = sorted(openset)
             cur = open[0]
@@ -143,16 +155,13 @@ class AstarMap():
             neighbor = cur.getneighbor()
             for nnode in neighbor:
                 if(self.listnode[nnode].extend(cur)):
-                    openset.add(self.listnode)
+                    openset.add(self.listnode[nnode])
                     if(self.listnode[nnode] == self.goalnode):
                         openset.clear()
                         flag = True
                         break
         
-        input = np.zeros((self.height, self.width, 3))
-        input[:,:, 0] = np.where(self.mapobs==0, 255, 0)
-        input[:,:, 1] = np.where(self.mapstart>0 or self.mapobs==0, 255, 0)
-        input[:,:, 2] = np.where(self.mapobs==0 or self.mapgoal>0, 255, 0)
+        
 
         self.maptoshow = input.copy()
 
@@ -163,19 +172,32 @@ class AstarMap():
                 y = currentid//self.width
                 x = currentid%self.width
                 self.resultmap[y, x] = 1
-                self.maptoshow[y, x, 1:2] = 0
+                self.maptoshow[y, x, 0:2] = 0
                 currentid = self.listnode[currentid].getparent()
 
-                if(currentid == -1): break
+                if(currentid == -1): 
+                    break
             
             cv2.imwrite(f"{self.path}result/result_{self.mapnumber}_{self.Nodenumber}.png", self.resultmap)
             cv2.imwrite(f"{self.path}show/show_{self.mapnumber}_{self.Nodenumber}.png", self.maptoshow)
             return True
         else:
             print("no path")
-            cv2.imwrite(f"{self.path}result/result_{self.clearness}_{self.mapnumber}_{self.Nodenumber}.png", self.resultmap)
-            cv2.imwrite(f"{self.path}show/show_{self.clearness}_{self.mapnumber}_{self.Nodenumber}.png", self.maptoshow)
+            cv2.imwrite(f"{self.path}result/result_{self.mapnumber}_{self.Nodenumber}.png", self.resultmap)
+            cv2.imwrite(f"{self.path}show/show_{self.mapnumber}_{self.Nodenumber}.png", self.maptoshow)
 
             return False
+        
+if __name__=="__main__":
+    width = 224
+    height = 224
+    path = "./dataset/"
+    astar = AstarMap(width, height, path, 0)
+    astar.initMap()
+    astar.initNode(0)
+    astar.clearlistnode()
+    astar.planning()
+
+
         
 
