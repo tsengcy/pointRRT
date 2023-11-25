@@ -136,9 +136,17 @@ class AstarMap():
         print(f"start {self.start[1]}, {self.start[0]}")
         self.Nodenumber = count
     
+    def diations(self, num):
+        kernel = np.array([[0,1,0], [1,1,1], [0,1,0]])
+        # self.map = self.mapobs.copy()
+        for _ in range(num):
+            self.resultmap = signal.convolve2d(self.resultmap, kernel, "same")
+        self.resultmap = np.where(self.resultmap>0, 1, 0)
+        self.resultmap = np.where(self.mapobs==0, self.resultmap, 0)
+
     def planning(self):
         self.resultmap = np.zeros((self.height, self.width))
-
+        
         openset = {self.listnode[self.width*self.start[1]+self.start[0]]}
         flag = False
 
@@ -177,7 +185,7 @@ class AstarMap():
 
                 if(currentid == -1): 
                     break
-            
+            self.diations(5)
             cv2.imwrite(f"{self.path}result/result_{self.mapnumber}_{self.Nodenumber}.png", self.resultmap)
             cv2.imwrite(f"{self.path}show/show_{self.mapnumber}_{self.Nodenumber}.png", self.maptoshow)
             return True
