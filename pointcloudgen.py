@@ -24,21 +24,22 @@ def genPoint(_pathobs: str, _pathresult: str, _num: int):
     while True:
         if count == _num:
             break
-        x = random.uniform(width*2/5, width*4/5)
-        y = random.uniform(height/2, height)
+        x = random.uniform(0, width)
+        y = random.uniform(0, height)
         if(imgInput[math.floor(y), math.floor(x), 0] == 255):
             if(imgResult[math.floor(y), math.floor(x), 0] == 0):
                 points[count, :] = np.array([x, y, 1])
                 axlist.append(x)
-                aylist.append(height- y)
+                aylist.append(y)
             else:
                 points[count, :] = np.array([x, y, 0])
                 bxlist.append(x)
-                bylist.append(height - y)
+                bylist.append(y)
             count += 1
             print(count)
     
     # fig, ax = plt.subplots()
+    plt.imshow(imgResult)
     plt.scatter(axlist, aylist, c='tab:blue', s=1)
     plt.scatter(bxlist, bylist, c='tab:orange', s=1)
     plt.savefig("img.png")
