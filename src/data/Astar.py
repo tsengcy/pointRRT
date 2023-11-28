@@ -131,7 +131,7 @@ class AstarMap():
                 break
         self.mapstart[self.start[1], self.start[0]] = 1
         self.mapgoal[self.goal[1], self.goal[0]] = 1
-        cv2.imwrite(f"{self.path}input/input2_.png", self.mapstart*255)
+        # cv2.imwrite(f"{self.path}input/input2_.png", self.mapstart*255)
 
         print(f"start {self.start[1]}, {self.start[0]}")
         self.Nodenumber = count

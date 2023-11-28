@@ -1,1 +1,12 @@
-dataset/
+dataset/train/input/*
+dataset/train/pointcloud/*
+dataset/train/pointcloudimage/
+dataset/train/result/*
+dataset/train/show/*
+dataset/train/showgroundturth/
+dataset/test/input/*
+dataset/test/pointcloud/*
+dataset/test/pointcloudimage/*
+dataset/test/result/*
+dataset/test/show/*
+dataset/test/showgroundturth/*
