@@ -2,7 +2,7 @@
 author: 曾建堯
 objective: this code is going to genertate the dataset for the point RRT, 
 output: 
-image of the enviroment (640x640)
+image of the enviroment (224x224)
 groundturth is A star with 8 neignbor
 sample N point
 """
@@ -150,11 +150,11 @@ class AstarMap():
         openset = {self.listnode[self.width*self.start[1]+self.start[0]]}
         flag = False
 
-        input = np.zeros((self.height, self.width, 3))
+        self.input = np.zeros((self.height, self.width, 3))
         # input[:,:, 0] = np.where(self.mapobs==0, 255, 0)
-        input[:,:, 2] = np.where(np.logical_xor(self.mapobs==1, np.logical_xor(self.mapstart==1, self.mapgoal==1)), 0, 255)
-        input[:,:, 1] = np.where(np.logical_and(self.mapgoal==0, self.mapobs==0), 255, 0)
-        input[:,:, 0] = np.where(np.logical_and(self.mapobs==0, self.mapstart==0), 255, 0)
+        self.input[:,:, 2] = np.where(np.logical_xor(self.mapobs==1, np.logical_xor(self.mapstart==1, self.mapgoal==1)), 0, 255)
+        self.input[:,:, 1] = np.where(np.logical_and(self.mapgoal==0, self.mapobs==0), 255, 0)
+        self.input[:,:, 0] = np.where(np.logical_and(self.mapobs==0, self.mapstart==0), 255, 0)
 
         while openset:
             open = sorted(openset)
@@ -171,9 +171,9 @@ class AstarMap():
         
         
 
-        self.maptoshow = input.copy()
+        self.maptoshow = self.input.copy()
 
-        cv2.imwrite(f"{self.path}input/input_{self.mapnumber}_{self.Nodenumber}.png", input)
+        cv2.imwrite(f"{self.path}input/input_{self.mapnumber}_{self.Nodenumber}.png", self.input)
         if(flag):
             currentid = self.goalnode.getid()
             while True:
@@ -188,13 +188,31 @@ class AstarMap():
             self.diations(5)
             cv2.imwrite(f"{self.path}result/result_{self.mapnumber}_{self.Nodenumber}.png", self.resultmap)
             cv2.imwrite(f"{self.path}show/show_{self.mapnumber}_{self.Nodenumber}.png", self.maptoshow)
+            self.maptoshow[:,:,0] = np.where(self.resultmap==0, self.maptoshow[:,:,0], 0)
+            self.maptoshow[:,:,1] = np.where(self.resultmap==0, self.maptoshow[:,:,1], 0)
+            cv2.imwrite(f"{self.path}showgroundturth/showgroundturth_{self.mapnumber}_{self.Nodenumber}.png", self.maptoshow)
             return True
         else:
             print("no path")
-            cv2.imwrite(f"{self.path}result/result_{self.mapnumber}_{self.Nodenumber}.png", self.resultmap)
-            cv2.imwrite(f"{self.path}show/show_{self.mapnumber}_{self.Nodenumber}.png", self.maptoshow)
+            # cv2.imwrite(f"{self.path}result/result_{self.mapnumber}_{self.Nodenumber}.png", self.resultmap)
+            # cv2.imwrite(f"{self.path}show/show_{self.mapnumber}_{self.Nodenumber}.png", self.maptoshow)
 
             return False
+        
+    def getinputMap(self)->np.ndarray: 
+        # print(input.shape)
+        return self.input
+    def getshowMap(self)->np.ndarray:
+        return self.maptoshow
+    def getresultMap(self)->np.ndarray:
+        return self.resultmap
+    
+    def getinputPath(self)->str:
+        return f"{self.path}input/input_{self.mapnumber}_{self.Nodenumber}.png"
+    def getshowPath(self)->str:
+        return f"{self.path}showgroundturth/showgroundturth_{self.mapnumber}_{self.Nodenumber}.png"
+    def getresultPath(self)->str:
+        return f"{self.path}result/result_{self.mapnumber}_{self.Nodenumber}.png"
         
 if __name__=="__main__":
     width = 224
@@ -203,6 +221,10 @@ if __name__=="__main__":
     astar = AstarMap(width, height, path, 0)
     astar.initMap()
     astar.initNode(0)
+    astar.clearlistnode()
+    astar.planning()
+
+    astar.initNode(1)
     astar.clearlistnode()
     astar.planning()
 
