@@ -109,7 +109,7 @@ class AstarMap():
         for i in range(self.width * self.height):
             y = i//self.width
             x = i%self.width
-            self.listnode.append(node(np.array([x, y]), self.goal, i, self.width, self.mapobs[y, x]))
+            self.listnode.append(node(np.array([x, y]), self.goal, i, self.width, self.map[y, x]))
         self.listnode[self.width*self.start[1] + self.start[0]].setAsStart()
         self.goalnode = self.listnode[self.width * self.goal[1] + self.goal[0]]
 
@@ -123,11 +123,11 @@ class AstarMap():
 
         while True:
             self.start = np.array([random.randint(1, self.width-2), random.randint(1, self.height-2)])
-            if(self.mapobs[self.start[1], self.start[0]]==0):
+            if(self.map[self.start[1], self.start[0]]==0):
                 break
         while True:
             self.goal = np.array([random.randint(1, self.width-2), random.randint(1, self.height-2)])
-            if(self.mapobs[self.goal[1], self.goal[0]]==0 and not (self.goal==self.start).any()):
+            if(self.map[self.goal[1], self.goal[0]]==0 and not (self.goal==self.start).any()):
                 break
         self.mapstart[self.start[1], self.start[0]] = 1
         self.mapgoal[self.goal[1], self.goal[0]] = 1

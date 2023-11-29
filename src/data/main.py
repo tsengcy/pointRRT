@@ -37,6 +37,7 @@ if __name__ == "__main__":
     for i in range(args.mapstart, args.nummap+args.mapstart):
         map = AstarMap(width, height, path, i)
         map.initMap()
+        map.setclearness(3)
         for j in range(args.numnode):
             map.initNode(j)
             map.clearlistnode()
