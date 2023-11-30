@@ -45,7 +45,8 @@ if __name__ == "__main__":
             if(check):
                 genPointUniform_np(map.getinputMap(), map.getresultMap(), map.getshowMap(), 
                                    f'{path}pointcloud/pointcloud_{i}_{j}.csv', 
-                                   f'{path}pointcloudimage/pointcloudimage_{i}_{j}.png',args.points)
+                                   f'{path}pointcloudimage/pointcloudimage_{i}_{j}.png',args.points,
+                                   map.getStart(), map.getGoal())
     print("end")
 
     

@@ -48,7 +48,7 @@ def genPointUniform(_pathobs: str, _pathresult: str, _pathshow: str, _pathPC: st
 
     np.savetxt(f'{_pathPC}', points, delimiter=",")
     
-def genPointUniform_np(_obs: np.ndarray, _result: np.ndarray, _show: np.ndarray, _pathPC: str, _pathPCimg: str, _num: int):
+def genPointUniform_np(_obs: np.ndarray, _result: np.ndarray, _show: np.ndarray, _pathPC: str, _pathPCimg: str, _num: int, start: np.ndarray, goal: np.ndarray):
     """
     return the list 
     """
@@ -61,7 +61,7 @@ def genPointUniform_np(_obs: np.ndarray, _result: np.ndarray, _show: np.ndarray,
     _obs = _obs.astype('uint8')
     _show = _show[:,:,[2,1,0]]
     height, width, _ = _obs.shape
-    points = np.zeros((_num, 4))
+    points = np.zeros((_num, 5))
     count = 0
     axlist = []
     aylist = []
@@ -74,11 +74,16 @@ def genPointUniform_np(_obs: np.ndarray, _result: np.ndarray, _show: np.ndarray,
         y = random.uniform(0, height-1)
         if(_obs[round(y), round(x), 2] != 0):
             if(_result[round(y), round(x)] == 0):
-                points[count, :] = np.array([x, y, 0, 0])
+                points[count, :] = np.array([x-width/2, y-height/2, 0, 0, 0])
                 axlist.append(x)
                 aylist.append(y)
             else:
-                points[count, :] = np.array([x, y, 0, 1])
+                if(np.linalg.norm(start-np.array([x,y]), ord=2)>5):
+                    points[count, :] = np.array([x-width/2, y-height/2, 0, 1, 1])
+                elif(np.linalg.norm(goal-np.array([x,y]), ord=2)>5):
+                    points[count, :] = np.array([x-width/2, y-height/2, 0, 2, 1])
+                else:
+                    points[count, :] = np.array([x-width/2, y-height/2, 0, 0, 1])
                 bxlist.append(x)
                 bylist.append(y)
             count += 1

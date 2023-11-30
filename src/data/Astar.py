@@ -213,6 +213,11 @@ class AstarMap():
         return f"{self.path}showgroundturth/showgroundturth_{self.mapnumber}_{self.Nodenumber}.png"
     def getresultPath(self)->str:
         return f"{self.path}result/result_{self.mapnumber}_{self.Nodenumber}.png"
+    
+    def getStart(self)->np.ndarray:
+        return self.start
+    def getGoal(self)->np.ndarray:
+        return self.goal
         
 if __name__=="__main__":
     width = 224
